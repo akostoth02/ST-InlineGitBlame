@@ -1,0 +1,10 @@
+[
+    {
+        "caption": "Inline Git Blame: Toggle",
+        "command": "inline_git_blame_toggle"
+    },
+    {
+        "caption": "Inline Git Blame: Clear Cache",
+        "command": "inline_git_blame_clear_cache"
+    }
+]

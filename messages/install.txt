@@ -1,0 +1,15 @@
+Inline Git Blame
+================
+
+Shows git blame information inline as a phantom at the end of the current line.
+
+Features:
+- Inline blame annotation (author, date, commit message) on the active line
+- Click the commit SHA to see a details popup
+- From the popup: copy the full SHA or open the commit in your browser
+- Auto-detects GitHub/GitLab/Bitbucket remote URLs
+
+Usage:
+- Blame appears automatically when you move the cursor
+- Toggle with Ctrl+Alt+B or via Command Palette: "Inline Git Blame: Toggle"
+- Customize via Preferences > Package Settings > Inline Git Blame > Settings
