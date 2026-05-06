@@ -1,0 +1,4 @@
+# Exclude non-functional files from the installed .sublime-package
+README.md export-ignore
+.gitignore export-ignore
+.gitattributes export-ignore
