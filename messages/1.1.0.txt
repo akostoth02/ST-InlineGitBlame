@@ -1,0 +1,6 @@
+Version 1.1.0
+=============
+
+- Key bindings are no longer active by default
+  Configure your preferred bindings via Preferences > Package Settings > Inline Git Blame > Key Bindings
+- Added .gitattributes to reduce installed package size

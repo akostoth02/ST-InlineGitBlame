@@ -1,10 +1,5 @@
 [
-    {
-        "keys": ["ctrl+alt+b"],
-        "command": "inline_git_blame_toggle"
-    },
-    {
-        "keys": ["ctrl+alt+shift+b"],
-        "command": "inline_git_blame_show_details"
-    }
+    // Uncomment and customize in your user keymap (Preferences > Key Bindings):
+    // { "keys": ["ctrl+alt+b"], "command": "inline_git_blame_toggle" },
+    // { "keys": ["ctrl+alt+shift+b"], "command": "inline_git_blame_show_details" }
 ]
