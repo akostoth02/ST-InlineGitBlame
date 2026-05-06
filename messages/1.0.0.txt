@@ -1,0 +1,14 @@
+Version 1.0.0
+=============
+
+Initial release of Inline Git Blame.
+
+Features:
+- Inline blame annotation at the end of the current line (author, date, SHA, message)
+- Click the annotation to open a commit details popup
+- Copy full SHA to clipboard from the popup
+- Open commit in browser (GitHub/GitLab/Bitbucket)
+- Automatic color scheme adaptation
+- Full-file blame caching for instant line navigation
+- Configurable date format (relative or absolute)
+- Toggle on/off via keybinding or command palette

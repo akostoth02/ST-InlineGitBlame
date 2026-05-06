@@ -93,6 +93,29 @@ Common issues:
 - **Empty lines**: Blame is not shown on empty lines by design, as there is no content to annotate.
 - **CMD windows flashing (Windows)**: This should not happen. If it does, please file an issue.
 
+## Releasing
+
+This project uses tag-based releases with semantic versioning.
+
+To cut a new release:
+
+1. Add a version entry to `messages.json`:
+   ```json
+   "1.1.0": "messages/1.1.0.txt"
+   ```
+2. Create `messages/<version>.txt` with release notes
+3. Commit the changes
+4. Create a signed annotated tag:
+   ```
+   git tag -a 1.1.0 -m "Short description of the release"
+   ```
+5. Push the commit and tag:
+   ```
+   git push origin main --tags
+   ```
+
+Package Control picks up new tags automatically.
+
 ## License
 
 MIT
