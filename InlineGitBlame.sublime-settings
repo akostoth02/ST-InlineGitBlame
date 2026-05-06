@@ -2,18 +2,6 @@
     // Enable/disable inline git blame annotations
     "enabled": true,
 
-    // Delay in milliseconds before showing blame after cursor movement
-    "delay_ms": 300,
-
     // Date format: "relative" (e.g. "3 days ago") or "absolute" (e.g. "2025-01-15")
-    "date_format": "relative",
-
-    // Show blame for uncommitted (dirty) lines
-    "show_uncommitted": true,
-
-    // Visual style
-    "style": {
-        "color": "color(var(--foreground) alpha(0.4))",
-        "font_style": "italic"
-    }
+    "date_format": "relative"
 }

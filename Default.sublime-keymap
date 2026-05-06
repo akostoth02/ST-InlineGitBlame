@@ -2,5 +2,9 @@
     {
         "keys": ["ctrl+alt+b"],
         "command": "inline_git_blame_toggle"
+    },
+    {
+        "keys": ["ctrl+alt+shift+b"],
+        "command": "inline_git_blame_show_details"
     }
 ]

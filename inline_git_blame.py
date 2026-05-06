@@ -5,10 +5,39 @@ import os
 import re
 import time
 import webbrowser
+import traceback
+
+
+_STARTUP_INFO = None
+if os.name == "nt":
+    _STARTUP_INFO = subprocess.STARTUPINFO()
+    _STARTUP_INFO.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+    _STARTUP_INFO.wShowWindow = subprocess.SW_HIDE
+
+
+_PREFIX = "InlineGitBlame"
+
+
+def _log(msg):
+    print(f"[{_PREFIX}] {msg}")
+
+
+def _log_error(msg):
+    print(f"[{_PREFIX}] ERROR: {msg}")
+    traceback.print_exc()
+
+
+_startup_complete = False
 
 
 def plugin_loaded():
-    pass
+    global _startup_complete
+    sublime.set_timeout(lambda: _set_startup_complete(), 1000)
+
+
+def _set_startup_complete():
+    global _startup_complete
+    _startup_complete = True
 
 
 def _get_settings():
@@ -54,7 +83,8 @@ def _get_remote_url(git_root):
         result = subprocess.run(
             ["git", "remote", "get-url", "origin"],
             capture_output=True, text=True, timeout=5,
-            cwd=git_root
+            cwd=git_root,
+            startupinfo=_STARTUP_INFO
         )
         url = result.stdout.strip()
         url = re.sub(r"\.git$", "", url)
@@ -66,42 +96,87 @@ def _get_remote_url(git_root):
 
 def _parse_blame_porcelain(output):
     if not output.strip():
-        return None
+        return {}
 
-    lines = output.strip().split("\n")
-    info = {}
+    result = {}
+    commits = {}
+    lines = output.split("\n")
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        parts = line.split()
+        if not parts:
+            i += 1
+            continue
 
-    first_line = lines[0].split()
-    info["sha"] = first_line[0]
+        if len(parts) >= 3 and len(parts[0]) == 40:
+            sha = parts[0]
+            line_num = int(parts[2])
+            info = {"sha": sha}
 
-    for line in lines[1:]:
-        if line.startswith("author "):
-            info["author"] = line[7:]
-        elif line.startswith("author-mail "):
-            info["author_mail"] = line[12:]
-        elif line.startswith("author-time "):
-            info["author_time"] = int(line[12:])
-        elif line.startswith("summary "):
-            info["summary"] = line[8:]
+            i += 1
+            while i < len(lines):
+                l = lines[i]
+                if l.startswith("\t"):
+                    i += 1
+                    break
+                elif l.startswith("author "):
+                    info["author"] = l[7:]
+                elif l.startswith("author-mail "):
+                    info["author_mail"] = l[12:]
+                elif l.startswith("author-time "):
+                    info["author_time"] = int(l[12:])
+                elif l.startswith("summary "):
+                    info["summary"] = l[8:]
+                i += 1
 
-    return info
+            if "author" in info:
+                commits[sha] = info
+            elif sha in commits:
+                info = dict(commits[sha])
+                info["sha"] = sha
+
+            result[line_num] = info
+        else:
+            i += 1
+
+    return result
+
+
+_listeners = {}
 
 
 class InlineGitBlameListener(sublime_plugin.ViewEventListener):
     def __init__(self, view):
         super().__init__(view)
         self.phantom_set = sublime.PhantomSet(view, "inline_git_blame")
-        self._pending = False
         self._last_row = -1
         self._cache = {}
         self._git_root = None
         self._remote_url = None
+        self._ignore_next_selection = False
+        _listeners[view.id()] = self
 
     @classmethod
     def is_applicable(cls, settings):
         return _get_settings().get("enabled", True)
 
+    def on_load_async(self):
+        if _get_settings().get("enabled", True):
+            if _startup_complete:
+                self._update_blame()
+            else:
+                sublime.set_timeout_async(self._update_blame, 500)
+
+    def on_activated_async(self):
+        if _get_settings().get("enabled", True):
+            self._update_blame()
+
     def on_selection_modified_async(self):
+        if self._ignore_next_selection:
+            self._ignore_next_selection = False
+            return
+
         if not _get_settings().get("enabled", True):
             self.phantom_set.update([])
             return
@@ -115,22 +190,23 @@ class InlineGitBlameListener(sublime_plugin.ViewEventListener):
             return
         self._last_row = row
 
-        if not self._pending:
-            self._pending = True
-            delay = _get_settings().get("delay_ms", 300)
-            sublime.set_timeout_async(self._update_blame, delay)
+        self._update_blame()
+
+    def on_modified_async(self):
+        self.phantom_set.update([])
+        self._cache.clear()
 
     def on_close(self):
         self._cache.clear()
+        _listeners.pop(self.view.id(), None)
 
     def on_post_save_async(self):
         self._cache.clear()
         self._update_blame()
 
     def _update_blame(self):
-        self._pending = False
         file_path = self.view.file_name()
-        if not file_path or self.view.is_dirty() and not _get_settings().get("show_uncommitted", True):
+        if not file_path:
             self.phantom_set.update([])
             return
 
@@ -144,38 +220,40 @@ class InlineGitBlameListener(sublime_plugin.ViewEventListener):
         if not sel:
             return
 
-        row, _ = self.view.rowcol(sel[0].begin())
+        cursor_pos = sel[0].begin()
+        row, _ = self.view.rowcol(cursor_pos)
         line_num = row + 1
 
-        if line_num in self._cache:
-            info = self._cache[line_num]
-        else:
-            info = self._run_blame(file_path, line_num)
-            self._cache[line_num] = info
+        if not self._cache:
+            self._cache = self._run_blame_file(file_path)
 
+        info = self._cache.get(line_num)
         if not info or info["sha"].startswith("0000000"):
             self.phantom_set.update([])
             return
 
-        self._show_phantom(info, row)
+        line_region = self.view.line(self.view.text_point(row, 0))
+        if line_region.empty():
+            self.phantom_set.update([])
+            return
 
-    def _run_blame(self, file_path, line_num):
+        self._show_phantom(info, line_region.end(), cursor_pos)
+
+    def _run_blame_file(self, file_path):
         try:
             result = subprocess.run(
-                ["git", "blame", "--porcelain", f"-L{line_num},{line_num}", "--", file_path],
-                capture_output=True, text=True, timeout=5,
-                cwd=self._git_root
+                ["git", "blame", "--porcelain", "--", file_path],
+                capture_output=True, text=True, timeout=30,
+                cwd=self._git_root,
+                startupinfo=_STARTUP_INFO
             )
             if result.returncode != 0:
-                return None
+                return {}
             return _parse_blame_porcelain(result.stdout)
         except Exception:
-            return None
+            return {}
 
-    def _show_phantom(self, info, row):
-        region = self.view.line(self.view.text_point(row, 0))
-        end = region.end()
-
+    def _show_phantom(self, info, line_end, cursor_pos):
         author = info.get("author", "Unknown")
         timestamp = info.get("author_time", 0)
         summary = info.get("summary", "")
@@ -190,32 +268,40 @@ class InlineGitBlameListener(sublime_plugin.ViewEventListener):
         if len(summary) > 50:
             summary = summary[:47] + "..."
 
-        style = _get_settings().get("style", {})
-        color = style.get("color", "color(var(--foreground) alpha(0.4))")
-        font_style = style.get("font_style", "italic")
-
         html = (
             f'<body id="inline-git-blame">'
             f'<style>'
-            f'  span {{ color: {color}; font-style: {font_style}; padding-left: 4em; font-size: 0.9em; }}'
-            f'  a {{ color: {color}; text-decoration: none; }}'
+            f'  a {{ color: color(var(--foreground) alpha(0.4)); font-style: italic; padding-left: 4em; font-size: 0.9em; text-decoration: none; }}'
             f'  a:hover {{ text-decoration: underline; }}'
             f'</style>'
-            f'<span>'
+            f'<a href="details:{sha}">'
             f'{author}, {date_str} '
-            f'<a href="details:{sha}">({sha[:7]})</a>'
+            f'({sha[:7]})'
             f' \u2014 {sublime.html.escape(summary)}'
-            f'</span>'
+            f'</a>'
             f'</body>'
         )
 
         phantom = sublime.Phantom(
-            sublime.Region(end, end),
+            sublime.Region(line_end, line_end),
             html,
             sublime.LAYOUT_INLINE,
             on_navigate=self._on_navigate
         )
         self.phantom_set.update([phantom])
+
+        # Restore cursor if the phantom pushed it past end of line
+        sublime.set_timeout(lambda: self._restore_cursor(cursor_pos), 0)
+
+    def _restore_cursor(self, target_pos):
+        sel = self.view.sel()
+        if not sel:
+            return
+        current_pos = sel[0].begin()
+        if current_pos != target_pos:
+            self._ignore_next_selection = True
+            self.view.sel().clear()
+            self.view.sel().add(sublime.Region(target_pos, target_pos))
 
     def _on_navigate(self, href):
         if href.startswith("details:"):
@@ -227,7 +313,8 @@ class InlineGitBlameListener(sublime_plugin.ViewEventListener):
             result = subprocess.run(
                 ["git", "show", "--no-patch", "--format=%H%n%an%n%ae%n%ai%n%s%n%b", sha],
                 capture_output=True, text=True, timeout=5,
-                cwd=self._git_root
+                cwd=self._git_root,
+                startupinfo=_STARTUP_INFO
             )
             if result.returncode != 0:
                 return
@@ -297,6 +384,31 @@ class InlineGitBlameListener(sublime_plugin.ViewEventListener):
             sha = href[5:]
             sublime.set_clipboard(sha)
             sublime.status_message(f"Copied {sha[:12]} to clipboard")
+
+
+class InlineGitBlameShowDetailsCommand(sublime_plugin.TextCommand):
+    def run(self, edit):
+        _log(f"ShowDetails command triggered, view_id={self.view.id()}")
+        _log(f"Known listeners: {list(_listeners.keys())}")
+
+        listener = _listeners.get(self.view.id())
+        if not listener:
+            _log("No listener found for this view")
+            return
+
+        sel = self.view.sel()
+        if not sel:
+            _log("No selection")
+            return
+
+        row, _ = self.view.rowcol(sel[0].begin())
+        line_num = row + 1
+        info = listener._cache.get(line_num)
+        _log(f"Line {line_num}, info={info}")
+        if info and not info["sha"].startswith("0000000"):
+            listener._show_details_popup(info["sha"])
+        else:
+            _log("No blame info for this line")
 
 
 class InlineGitBlameToggleCommand(sublime_plugin.TextCommand):

@@ -1,0 +1,10 @@
+[
+    // Inline Git Blame default key bindings.
+    // Copy these to your user keymap (Preferences > Key Bindings) to customize.
+
+    // Toggle inline blame on/off
+    { "keys": ["ctrl+alt+b"], "command": "inline_git_blame_toggle" },
+
+    // Show commit details popup for the current line
+    { "keys": ["ctrl+alt+shift+b"], "command": "inline_git_blame_show_details" }
+]

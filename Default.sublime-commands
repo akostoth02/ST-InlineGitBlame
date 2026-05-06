@@ -4,6 +4,10 @@
         "command": "inline_git_blame_toggle"
     },
     {
+        "caption": "Inline Git Blame: Show Commit Details",
+        "command": "inline_git_blame_show_details"
+    },
+    {
         "caption": "Inline Git Blame: Clear Cache",
         "command": "inline_git_blame_clear_cache"
     }
