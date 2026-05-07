@@ -93,6 +93,20 @@ Common issues:
 - **Empty lines**: Blame is not shown on empty lines by design, as there is no content to annotate.
 - **CMD windows flashing (Windows)**: This should not happen. If it does, please file an issue.
 
+## Commit Convention
+
+Commit messages are prefixed with a tag indicating the type of change:
+
+- **`[FEATURE]`** — New functionality
+- **`[FIX]`** — Bug fix
+- **`[REFACTOR]`** — Code restructuring without behavior change
+- **`[DOCS]`** — Documentation only
+- **`[CHORE]`** — Maintenance, config, dependencies, tooling
+- **`[STYLE]`** — Formatting, whitespace, cosmetic changes
+- **`[TEST]`** — Adding or updating tests
+
+Example: `[FEATURE] Add support for Bitbucket Server remote URLs`
+
 ## Releasing
 
 This project uses tag-based releases with semantic versioning.
