@@ -1,0 +1,6 @@
+Version 1.2.0
+=============
+
+- Fixed phantom_alignment "end" not aligning to the configured column
+- Added "debug" setting to toggle console logging (off by default)
+- Internal: refactored plugin into multi-module package architecture
