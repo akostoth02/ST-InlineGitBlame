@@ -45,7 +45,8 @@ def get_settings():
 
 
 def log(msg):
-    print(f"[{LOG_PREFIX}] {msg}")
+    if get_settings().get("debug", False):
+        print(f"[{LOG_PREFIX}] {msg}")
 
 
 def log_error(msg):
