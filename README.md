@@ -93,6 +93,12 @@ Common issues:
 - **Empty lines**: Blame is not shown on empty lines by design, as there is no content to annotate.
 - **CMD windows flashing (Windows)**: This should not happen. If it does, please file an issue.
 
+## Documentation
+
+Architecture and design documentation lives in the [`docs/`](docs/) directory:
+
+- [Architecture](docs/architecture.md) — Package structure, design principles, and data flow
+
 ## Commit Convention
 
 Commit messages are prefixed with a tag indicating the type of change:

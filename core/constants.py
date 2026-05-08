@@ -1,0 +1,36 @@
+# Plugin identity
+LOG_PREFIX = "InlineGitBlame"
+SETTINGS_FILE = "InlineGitBlame.sublime-settings"
+PHANTOM_KEY = "inline_git_blame"
+
+# Blame display
+SUMMARY_MAX_LENGTH = 50
+SUMMARY_ELLIPSIS_LENGTH = 47
+SHA_DISPLAY_SHORT = 7
+SHA_DISPLAY_LONG = 12
+UNCOMMITTED_SHA_PREFIX = "0000000"
+
+# Phantom alignment
+DEFAULT_SPACING_CHARS = 4
+MIN_SPACING_CHARS = 4
+DEFAULT_ALIGN_COLUMN = 120
+DEFAULT_TAB_SIZE = 4
+
+# Subprocess timeouts (seconds)
+BLAME_TIMEOUT_SECS = 30
+GIT_TIMEOUT_SECS = 5
+
+# Popup dimensions
+POPUP_MAX_WIDTH = 700
+POPUP_MAX_HEIGHT = 400
+
+# Startup timing (milliseconds)
+STARTUP_DELAY_MS = 1000
+LOAD_DELAY_MS = 500
+
+# Time thresholds for relative_time (seconds)
+SECONDS_PER_MINUTE = 60
+SECONDS_PER_HOUR = 3600
+SECONDS_PER_DAY = 86400
+SECONDS_PER_MONTH = 2592000
+SECONDS_PER_YEAR = 31536000
