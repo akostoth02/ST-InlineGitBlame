@@ -1,7 +1,23 @@
 {
-    // Enable/disable inline git blame annotations
+    // Toggle inline git blame annotations on or off.
+    //   true  - Show blame annotations (default)
+    //   false - Hide blame annotations
     "enabled": true,
 
-    // Date format: "relative" (e.g. "3 days ago") or "absolute" (e.g. "2025-01-15")
-    "date_format": "relative"
+    // Controls how the commit date is displayed in the blame annotation.
+    //   "relative" - Human-readable relative time, e.g. "3 days ago" (default)
+    //   "absolute" - ISO date format, e.g. "2025-01-15"
+    "date_format": "relative",
+
+    // Controls horizontal placement of the blame annotation.
+    //   "start" - Appears immediately after the line content with a small gap (default)
+    //   "end"   - Aligned to a fixed column (see phantom_align_column).
+    //             Lines longer than the target column will use a minimum gap of 4 characters.
+    "phantom_alignment": "start",
+
+    // The column at which blame annotations are aligned when phantom_alignment is "end".
+    //   0    - Use the last ruler position; if no rulers are set, falls back to column 120 (default)
+    //   <N>  - Align to column N (e.g. 80, 100, 120)
+    // Has no effect when phantom_alignment is "start".
+    "phantom_align_column": 0
 }

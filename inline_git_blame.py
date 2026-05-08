@@ -259,7 +259,8 @@ class InlineGitBlameListener(sublime_plugin.ViewEventListener):
         summary = info.get("summary", "")
         sha = info.get("sha", "")
 
-        date_format = _get_settings().get("date_format", "relative")
+        settings = _get_settings()
+        date_format = settings.get("date_format", "relative")
         if date_format == "relative":
             date_str = _relative_time(timestamp)
         else:
@@ -268,12 +269,36 @@ class InlineGitBlameListener(sublime_plugin.ViewEventListener):
         if len(summary) > 50:
             summary = summary[:47] + "..."
 
+        alignment = settings.get("phantom_alignment", "start")
+        spacing = "&nbsp;" * 4
+
+        if alignment == "end":
+            # Align to a ruler or configured column
+            align_column = settings.get("phantom_align_column", 0)
+            if align_column <= 0:
+                rulers = self.view.settings().get("rulers", [])
+                align_column = int(rulers[-1]) if rulers else 120
+            # Use visual column width (accounts for tab expansion)
+            line_region = self.view.line(line_end)
+            line_text = self.view.substr(line_region)
+            tab_size = self.view.settings().get("tab_size", 4)
+            visual_col = 0
+            for ch in line_text:
+                if ch == "\t":
+                    visual_col += tab_size - (visual_col % tab_size)
+                else:
+                    visual_col += 1
+            padding_chars = max(4, align_column - visual_col)
+            spacing = "&nbsp;" * padding_chars
+
         html = (
             f'<body id="inline-git-blame">'
             f'<style>'
-            f'  a {{ color: color(var(--foreground) alpha(0.4)); font-style: italic; padding-left: 4em; font-size: 0.9em; text-decoration: none; }}'
+            f'  a {{ color: color(var(--foreground) alpha(0.4)); font-style: italic;'
+            f' font-size: 0.9em; text-decoration: none; }}'
             f'  a:hover {{ text-decoration: underline; }}'
             f'</style>'
+            f'{spacing}'
             f'<a href="details:{sha}">'
             f'{author}, {date_str} '
             f'({sha[:7]})'
