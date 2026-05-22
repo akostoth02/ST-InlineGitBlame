@@ -6,13 +6,14 @@
                 "id": "package-settings",
                 "children": [
                     {
-                        "caption": "Inline Git Blame",
+                        "caption": "InlineGitBlame",
                         "children": [
                             {
                                 "caption": "Settings",
                                 "command": "edit_settings",
                                 "args": {
                                     "base_file": "${packages}/InlineGitBlame/InlineGitBlame.sublime-settings",
+                                    "user_file": "${packages}/User/InlineGitBlame.sublime-settings",
                                     "default": "{\n\t$0\n}\n"
                                 }
                             },
@@ -20,7 +21,8 @@
                                 "caption": "Key Bindings",
                                 "command": "edit_settings",
                                 "args": {
-                                    "base_file": "${packages}/InlineGitBlame/Default (InlineGitBlame).sublime-keymap",
+                                    "base_file": "${packages}/InlineGitBlame/Default.sublime-keymap",
+                                    "user_file": "${packages}/User/Default.sublime-keymap",
                                     "default": "[\n\t$0\n]\n"
                                 }
                             }

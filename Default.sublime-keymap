@@ -1,5 +1,12 @@
 [
-    // Uncomment and customize in your user keymap (Preferences > Key Bindings):
+    // Inline Git Blame default key bindings.
+    //
+    // Bindings are opt-in. Uncomment the entries below in your user keymap
+    // (Preferences > Package Settings > InlineGitBlame > Key Bindings) to enable them.
+
+    // Toggle inline blame on/off
     // { "keys": ["ctrl+alt+b"], "command": "inline_git_blame_toggle" },
-    // { "keys": ["ctrl+alt+shift+b"], "command": "inline_git_blame_show_details" }
+
+    // Show commit details popup for the current line
+    // { "keys": ["ctrl+alt+shift+b"], "command": "inline_git_blame_show_details" },
 ]
