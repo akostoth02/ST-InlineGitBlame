@@ -10,5 +10,23 @@
     {
         "caption": "Inline Git Blame: Clear Cache",
         "command": "inline_git_blame_clear_cache"
+    },
+    {
+        "caption": "Preferences: InlineGitBlame Settings",
+        "command": "edit_settings",
+        "args": {
+            "base_file": "${packages}/InlineGitBlame/InlineGitBlame.sublime-settings",
+            "user_file": "${packages}/User/InlineGitBlame.sublime-settings",
+            "default": "{\n\t$0\n}\n"
+        }
+    },
+    {
+        "caption": "Preferences: InlineGitBlame Key Bindings",
+        "command": "edit_settings",
+        "args": {
+            "base_file": "${packages}/InlineGitBlame/Default.sublime-keymap",
+            "user_file": "${packages}/User/Default.sublime-keymap",
+            "default": "[\n\t$0\n]\n"
+        }
     }
 ]
